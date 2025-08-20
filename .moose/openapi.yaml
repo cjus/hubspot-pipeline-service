@@ -1,0 +1,333 @@
+openapi: 3.0.0
+info:
+  title: pipeline-hubspot-to-clickhouse API
+  version: 0.1.0
+servers:
+- url: http://localhost:4000
+  description: Server URL
+paths:
+  /consumption/hubspot-workflow-trigger:
+    get:
+      summary: Egress endpoint for hubspot-workflow-trigger
+      parameters:
+      - name: workflowName
+        in: query
+        required: false
+        schema:
+          type: string
+        example: stringValue
+      - name: force
+        in: query
+        required: false
+        schema:
+          type: boolean
+        example: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowExecutionResponse'
+  /consumption/hubspot-deal-pipeline:
+    get:
+      summary: Egress endpoint for hubspot-deal-pipeline
+      parameters:
+      - name: daysBack
+        in: query
+        required: false
+        schema:
+          type: number
+        example: 1.0
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: number
+        example: 1.0
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HubSpotPipelinePerformanceData'
+  /consumption/hubspot-deal-lookup:
+    get:
+      summary: Egress endpoint for hubspot-deal-lookup
+      parameters:
+      - name: dealId
+        in: query
+        required: false
+        schema:
+          type: string
+        example: stringValue
+      - name: dealName
+        in: query
+        required: false
+        schema:
+          type: string
+        example: stringValue
+      - name: ownerId
+        in: query
+        required: false
+        schema:
+          type: string
+        example: stringValue
+      - name: stage
+        in: query
+        required: false
+        schema:
+          type: string
+        example: stringValue
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: number
+        example: 1.0
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HubSpotDealData'
+  /consumption/hubspot-deals-analytics:
+    get:
+      summary: Egress endpoint for hubspot-deals-analytics
+      parameters:
+      - name: groupBy
+        in: query
+        required: false
+        schema:
+          type: string
+        example: stringValue
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: number
+        example: 1.0
+      - name: includeArchived
+        in: query
+        required: false
+        schema:
+          type: boolean
+        example: true
+      - name: currency
+        in: query
+        required: false
+        schema:
+          type: string
+        example: stringValue
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HubSpotDealAnalyticsData'
+  /ingest/HubSpotDealRaw:
+    post:
+      summary: Ingress endpoint for HubSpotDealRaw
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HubSpotDealRaw'
+      responses:
+        '200':
+          description: Successful operation
+components:
+  schemas:
+    HubSpotDealData:
+      type: object
+      properties:
+        id:
+          type: string
+        dealName:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        stage:
+          type: string
+        stageLabel:
+          type: string
+        pipeline:
+          type: string
+        pipelineLabel:
+          type: string
+        closeDate:
+          type: string
+        createdAt:
+          type: string
+        ownerId:
+          type: string
+        isWon:
+          type: boolean
+        isClosed:
+          type: boolean
+        contactCount:
+          type: number
+        associatedContacts:
+          type: array
+          items:
+            type: string
+        associatedCompanies:
+          type: array
+          items:
+            type: string
+      required:
+      - id
+      - dealName
+      - amount
+      - currency
+      - stage
+      - stageLabel
+      - pipeline
+      - pipelineLabel
+      - createdAt
+      - isWon
+      - isClosed
+      - contactCount
+      - associatedContacts
+      - associatedCompanies
+    WorkflowExecutionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        workflowName:
+          type: string
+        executionId:
+          type: string
+        status:
+          oneOf:
+          - const: started
+          - const: failed
+        message:
+          type: string
+        startTime:
+          type: string
+        error:
+          type: string
+      required:
+      - success
+      - workflowName
+      - executionId
+      - status
+      - message
+      - startTime
+    HubSpotDealRaw:
+      type: object
+      properties:
+        id:
+          type: string
+          example: stringValue
+        updatedAt:
+          type: string
+          example: stringValue
+        archived:
+          type: boolean
+          example: true
+        associations:
+          $ref: '#/components/schemas/HubSpotDealRaw_associations'
+        createdAt:
+          type: string
+          example: stringValue
+        properties:
+          type: string
+          example: stringValue
+      required:
+      - id
+      - properties
+      - createdAt
+      - updatedAt
+      - archived
+      - associations
+    HubSpotDealRaw_associations:
+      type: object
+      properties:
+        companies:
+          type: array
+          items:
+            type: string
+        contacts:
+          type: array
+          items:
+            type: string
+      required:
+      - contacts
+      - companies
+    HubSpotPipelinePerformanceData:
+      type: object
+      properties:
+        pipeline:
+          type: string
+        pipelineLabel:
+          type: string
+        totalDeals:
+          type: number
+        totalValue:
+          type: number
+        wonDeals:
+          type: number
+        wonValue:
+          type: number
+        lostDeals:
+          type: number
+        avgDaysToClose:
+          type: number
+        conversionRate:
+          type: number
+      required:
+      - pipeline
+      - pipelineLabel
+      - totalDeals
+      - totalValue
+      - wonDeals
+      - wonValue
+      - lostDeals
+      - avgDaysToClose
+      - conversionRate
+    HubSpotDealAnalyticsData:
+      type: object
+      properties:
+        groupField:
+          type: string
+        groupLabel:
+          type: string
+        dealCount:
+          type: number
+        totalAmount:
+          type: number
+        avgAmount:
+          type: number
+        wonAmount:
+          type: number
+        wonCount:
+          type: number
+        winRate:
+          type: number
+        avgDaysToClose:
+          type: number
+      required:
+      - groupField
+      - groupLabel
+      - dealCount
+      - totalAmount
+      - avgAmount
+      - wonAmount
+      - wonCount
+      - winRate
